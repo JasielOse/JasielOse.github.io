@@ -50,4 +50,3 @@ open index.html
 
 ---
 
-Built with [Claude](https://claude.ai).
