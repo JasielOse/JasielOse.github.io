@@ -1,28 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>My Slack Info</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HerGame — Women's Football</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080d0a; --surface: #0f1812; --surface2: #141f17; --surface3: #1a2a1e;
+    --border: #1f2e23; --lime: #c1ff4f; --lime-dim: #8fcc2a; --lime-muted: #2a4a10;
+    --text: #e8f0e9; --text-dim: #7a9a7e; --text-muted: #3d5440;
+    --red: #ff5252; --yellow: #ffd740; --live: #ff4444; --radius: 10px;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: 0.4; }
+
+  header { position: sticky; top: 0; z-index: 100; background: rgba(8,13,10,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 20px; }
+  .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .logo-icon { width: 34px; height: 34px; background: var(--lime); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--lime); line-height: 1; }
+  .logo-sub { font-size: 9px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; margin-top: -2px; }
+  nav { display: flex; gap: 4px; }
+  nav button { background: none; border: none; color: var(--text-dim); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  nav button:hover { background: var(--surface2); color: var(--text); }
+  nav button.active { background: var(--lime-muted); color: var(--lime); }
+  .notif-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; position: relative; z-index: 1; }
+  .layout { display: grid; grid-template-columns: 250px 1fr 260px; gap: 20px; }
+
+  .date-strip { display: flex; gap: 4px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .date-strip::-webkit-scrollbar { display: none; }
+  .date-pill { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 8px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; background: var(--surface); }
+  .date-pill:hover { border-color: var(--border); }
+  .date-pill.active { background: var(--lime); }
+  .date-pill .day { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+  .date-pill .num { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--text); line-height: 1.1; }
+  .date-pill.active .day, .date-pill.active .num { color: var(--bg); }
+
+  .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+  .sidebar-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .sidebar-card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--lime); }
+  .sidebar-card-action { font-size: 11px; color: var(--text-muted); cursor: pointer; }
+
+  .league-group { margin-bottom: 12px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--surface); animation: fadeUp 0.3s ease both; }
+  .league-group:nth-child(1){animation-delay:.05s}.league-group:nth-child(2){animation-delay:.1s}.league-group:nth-child(3){animation-delay:.15s}.league-group:nth-child(4){animation-delay:.2s}.league-group:nth-child(5){animation-delay:.25s}
+  .league-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface2); cursor: pointer; border-bottom: 1px solid var(--border); }
+  .league-flag { font-size: 16px; }
+  .league-name { font-size: 12px; font-weight: 600; flex: 1; }
+  .league-count { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+  .match-row { display: grid; grid-template-columns: 52px 1fr auto 1fr 52px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; gap: 8px; }
+  .match-row:last-child { border-bottom: none; }
+  .match-row:hover { background: var(--surface2); }
+  .match-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.4; }
+  .match-time.live { color: var(--live); font-weight: 600; }
+  .match-time.live::after { content: ''; display: block; width: 6px; height: 6px; background: var(--live); border-radius: 50%; margin: 3px auto 0; animation: pulse 1.2s infinite; }
+  .team-home { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .team-away { display: flex; align-items: center; gap: 8px; }
+  .team-name { font-size: 13px; font-weight: 500; }
+  .team-crest { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .score-box { display: flex; align-items: center; gap: 6px; justify-content: center; min-width: 60px; }
+  .score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; line-height: 1; color: var(--text); min-width: 16px; text-align: center; }
+  .score-sep { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--text-muted); }
+  .score.winner { color: var(--lime); }
+  .match-status-vs { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 16px; background: var(--surface); border-radius: 8px; padding: 3px; border: 1px solid var(--border); }
+  .tab { flex: 1; background: none; border: none; color: var(--text-dim); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 7px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface3); color: var(--lime); font-weight: 600; }
+
+  .live-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,68,68,0.15); border: 1px solid rgba(255,68,68,0.3); color: var(--live); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+  .live-dot { width: 5px; height: 5px; background: var(--live); border-radius: 50%; animation: pulse 1.2s infinite; }
+
+  .featured-banner { background: linear-gradient(135deg, #0f2a18 0%, #1a3a22 50%, #0d1f12 100%); border: 1px solid var(--lime-muted); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; cursor: pointer; transition: border-color 0.2s; }
+  .featured-banner:hover { border-color: var(--lime-dim); }
+  .featured-banner::before { content: '⚽'; position: absolute; right: -10px; top: -10px; font-size: 90px; opacity: 0.06; transform: rotate(20deg); }
+  .featured-tag { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--lime); background: var(--lime-muted); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+  .featured-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; line-height: 1.1; margin-bottom: 6px; }
+  .featured-subtitle { font-size: 12px; color: var(--text-dim); }
+  .featured-meta { display: flex; gap: 16px; margin-top: 14px; }
+  .featured-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .featured-meta-label { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+  .featured-meta-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--lime); }
+
+  .standings-row { display: grid; grid-template-columns: 20px 1fr 28px 28px 28px 36px; gap: 6px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: background 0.15s; }
+  .standings-row:hover { background: var(--surface2); }
+  .standings-row:last-child { border-bottom: none; }
+  .standings-row.header { color: var(--text-muted); font-size: 10px; font-weight: 600; cursor: default; }
+  .standings-row.header:hover { background: none; }
+  .standings-pos { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: center; }
+  .standings-team { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+  .standings-pts { font-family: 'JetBrains Mono', monospace; text-align: center; font-weight: 600; color: var(--lime); }
+  .standings-num { font-family: 'JetBrains Mono', monospace; text-align: center; color: var(--text-dim); }
+  .pos-indicator { width: 3px; height: 16px; border-radius: 2px; margin-right: -4px; }
+
+  .scorer-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .scorer-row:hover { background: var(--surface2); }
+  .scorer-row:last-child { border-bottom: none; }
+  .scorer-rank { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); width: 16px; text-align: center; }
+  .scorer-info { flex: 1; }
+  .scorer-name { font-size: 12px; font-weight: 600; }
+  .scorer-team { font-size: 10px; color: var(--text-muted); }
+  .scorer-goals { display: flex; align-items: baseline; gap: 3px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--lime); }
+  .scorer-goals span { font-size: 10px; font-family: 'DM Sans', sans-serif; color: var(--text-muted); }
+
+  .comp-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .comp-item:hover { background: var(--surface2); }
+  .comp-item:last-child { border-bottom: none; }
+  .comp-icon { font-size: 16px; }
+  .comp-info { flex: 1; }
+  .comp-name { font-size: 12px; font-weight: 500; }
+  .comp-country { font-size: 10px; color: var(--text-muted); }
+
+  /* MODALS */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 720px; overflow: hidden; transform: translateY(20px); transition: transform 0.25s; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; }
+  .modal-close { background: var(--surface3); border: 1px solid var(--border); color: var(--text-dim); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .modal-close:hover { color: var(--text); }
+
+  .match-hero { text-align: center; padding: 24px 20px; background: linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%); border-bottom: 1px solid var(--border); }
+  .match-hero-league { font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+  .match-hero-teams { display: flex; align-items: center; justify-content: center; gap: 20px; }
+  .match-hero-team { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+  .match-hero-crest { font-size: 42px; }
+  .match-hero-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; }
+  .match-hero-score { font-family: 'Bebas Neue', sans-serif; font-size: 56px; color: var(--lime); letter-spacing: 4px; line-height: 1; }
+  .match-hero-meta { margin-top: 12px; font-size: 12px; color: var(--text-dim); }
+
+  .modal-tabs { display: flex; gap: 2px; padding: 12px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .modal-tabs::-webkit-scrollbar { display: none; }
+  .modal-tab { background: none; border: none; color: var(--text-dim); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .modal-tab:hover { color: var(--text); background: var(--surface3); }
+  .modal-tab.active { background: var(--lime-muted); color: var(--lime); font-weight: 600; }
+  .modal-panel { display: none; padding: 20px; }
+  .modal-panel.active { display: block; }
+
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--border); border-radius: 1px; }
+  .timeline-event { position: relative; padding: 8px 0 8px 20px; }
+  .timeline-event::before { content: ''; position: absolute; left: -5px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--border); }
+  .timeline-event.goal::before { background: var(--lime); border-color: var(--lime); }
+  .timeline-event.yellow::before { background: var(--yellow); border-color: var(--yellow); }
+  .timeline-event.red-card::before { background: var(--red); border-color: var(--red); }
+  .timeline-minute { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .timeline-desc { font-size: 13px; font-weight: 500; margin-top: 2px; }
+  .timeline-sub-info { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+  .lineup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .lineup-team-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--lime); text-transform: uppercase; margin-bottom: 12px; }
+  .lineup-player { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: color 0.15s; }
+  .lineup-player:hover { color: var(--lime); }
+  .lineup-player:last-child { border-bottom: none; }
+  .lineup-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); width: 20px; }
+  .lineup-pos { font-size: 9px; color: var(--text-muted); background: var(--surface3); padding: 1px 5px; border-radius: 3px; letter-spacing: 0.5px; }
+
+  .player-hero { display: flex; gap: 20px; padding: 20px; background: var(--surface2); border-bottom: 1px solid var(--border); align-items: center; }
+  .player-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--surface3); display: flex; align-items: center; justify-content: center; font-size: 40px; border: 3px solid var(--lime-muted); flex-shrink: 0; }
+  .player-info { flex: 1; }
+  .player-name-big { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 1px; line-height: 1; }
+  .player-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .player-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-top: 1px solid var(--border); }
+  .player-stat-box { background: var(--surface); padding: 14px; text-align: center; }
+  .player-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--lime); line-height: 1; }
+  .player-stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+
+  .ai-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--lime); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .ai-prompt-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .ai-input { flex: 1; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
+  .ai-input:focus { border-color: var(--lime-muted); }
+  .ai-input::placeholder { color: var(--text-muted); }
+  .ai-btn { background: var(--lime); color: var(--bg); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+  .ai-btn:hover { opacity: 0.85; }
+  .ai-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .ai-response { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.7; color: var(--text-dim); min-height: 80px; white-space: pre-wrap; }
+  .ai-spinner { width: 12px; height: 12px; border: 2px solid var(--lime-muted); border-top-color: var(--lime); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  .ai-spinner.active { display: inline-block; }
+  .ai-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .ai-chip { background: var(--surface3); border: 1px solid var(--border); color: var(--text-dim); font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+  .ai-chip:hover { border-color: var(--lime-muted); color: var(--lime); }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar-left, .sidebar-right { display: none; } }
+  @media (max-width: 600px) { nav { display: none; } .team-name { font-size: 11px; } .match-row { padding: 9px 10px; } .player-stats-grid { grid-template-columns: repeat(2,1fr); } .lineup-grid { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-    <h1>My Slack Information</h1>
-    <div class="profile">
-        <p data-testid="slackUserName">Oseme Uzama</p>
-        <img src="images/oseme.jpeg.jpeg" alt="Oseme Uzama" data-testid="slackDisplayImage">
-        
-    </div>
 
-    <div class="real-time-data">
-        <p>Current Day of the Week: <span data-testid="currentDayOfTheWeek"></span></p>
-        <p>Current UTC Time: <span data-testid="currentUTCTime"></span></p>
-        <p>Track:Frontend <span data-testid="myTrack"></span></p>
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="closeAllModals()">
+      <div class="logo-icon">⚽</div>
+      <div><div class="logo-text">HerGame</div><div class="logo-sub">Women's Football</div></div>
     </div>
-    <div class="github-link">
-        <a href="https://github.com/JasielOse" data-testid="githubURL">My GitHub Repository</a>
+    <nav>
+      <button class="active">Scores</button>
+      <button>Leagues</button>
+      <button>Teams</button>
+      <button>Players</button>
+      <button>News</button>
+    </nav>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="notif-btn">🔔</div>
     </div>
+  </div>
+</header>
 
-    <script src="script.js"></script>
+<div class="container">
+  <div class="date-strip" id="dateStrip"></div>
+  <div class="layout">
+    <aside class="sidebar-left">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <span class="sidebar-card-title">Competitions</span>
+          <span class="sidebar-card-action">All →</span>
+        </div>
+        <div id="compList"></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="featured-banner" id="featuredBanner">
+        <div class="featured-tag">🔥 Live Now</div>
+        <div class="featured-title">Lyon vs Arsenal</div>
+        <div class="featured-subtitle">UEFA Women's Champions League · Semi-Final 2nd Leg</div>
+        <div class="featured-meta">
+          <div class="featured-meta-item"><span class="featured-meta-label">Minute</span><span class="featured-meta-value">45'</span></div>
+          <div class="featured-meta-item"><span class="featured-meta-label">Score</span><span class="featured-meta-value">2 – 1</span></div>
+          <div class="featured-meta-item"><span class="featured-meta-label">1st Leg</span><span class="featured-meta-value">1 – 2</span></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'all')">All</button>
+        <button class="tab" onclick="switchTab(this,'live')">🔴 Live</button>
+        <button class="tab" onclick="switchTab(this,'finished')">Finished</button>
+        <button class="tab" onclick="switchTab(this,'upcoming')">Upcoming</button>
+      </div>
+      <div id="matchesFeed"></div>
+    </main>
+
+    <aside class="sidebar-right">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <span class="sidebar-card-title">Top Scorers</span>
+          <span class="sidebar-card-action">WSL ▾</span>
+        </div>
+        <div id="scorersList"></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <span class="sidebar-card-title">Standings</span>
+          <span class="sidebar-card-action">WSL ▾</span>
+        </div>
+        <div id="standingsTable"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- MATCH MODAL -->
+<div class="modal-overlay" id="matchModal" onclick="handleOverlayClick(event,'matchModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="matchModalTitle">Match Detail</span>
+      <button class="modal-close" onclick="closeModal('matchModal')">✕</button>
+    </div>
+    <div id="matchHero"></div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchModalTab(this,'matchOverview')">Overview</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'matchStats')">Stats</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'matchLineup')">Lineup</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'matchTimeline')">Timeline</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'matchAI')">✨ AI Analysis</button>
+    </div>
+    <div class="modal-panel active" id="matchOverview"></div>
+    <div class="modal-panel" id="matchStats"></div>
+    <div class="modal-panel" id="matchLineup"></div>
+    <div class="modal-panel" id="matchTimeline"></div>
+    <div class="modal-panel" id="matchAI">
+      <div class="ai-label">✨ AI Match Analysis <div class="ai-spinner" id="matchSpinner"></div></div>
+      <div class="ai-chips" id="matchChips"></div>
+      <div class="ai-prompt-bar">
+        <input class="ai-input" id="matchAIInput" placeholder="Ask anything about this match…" onkeydown="if(event.key==='Enter')askMatchAI()">
+        <button class="ai-btn" id="matchAIBtn" onclick="askMatchAI()">Ask</button>
+      </div>
+      <div class="ai-response" id="matchAIResponse">Ask me about tactics, player performances, historical context, or anything about this match.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER MODAL -->
+<div class="modal-overlay" id="playerModal" onclick="handleOverlayClick(event,'playerModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="playerModalTitle">Player Profile</span>
+      <button class="modal-close" onclick="closeModal('playerModal')">✕</button>
+    </div>
+    <div id="playerHero"></div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchModalTab(this,'playerOverview')">Overview</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'playerCareer')">Career</button>
+      <button class="modal-tab" onclick="switchModalTab(this,'playerAI')">✨ AI Scout</button>
+    </div>
+    <div class="modal-panel active" id="playerOverview"></div>
+    <div class="modal-panel" id="playerCareer"></div>
+    <div class="modal-panel" id="playerAI">
+      <div class="ai-label">✨ AI Scout Report <div class="ai-spinner" id="playerSpinner"></div></div>
+      <div class="ai-chips" id="playerChips"></div>
+      <div class="ai-prompt-bar">
+        <input class="ai-input" id="playerAIInput" placeholder="Ask about this player's style, career, records…" onkeydown="if(event.key==='Enter')askPlayerAI()">
+        <button class="ai-btn" id="playerAIBtn" onclick="askPlayerAI()">Ask</button>
+      </div>
+      <div class="ai-response" id="playerAIResponse">Ask me about this player's strengths, career highlights, playing style, or legacy in women's football.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const competitions=[
+  {icon:'🏆',name:"Women's Champions League",country:'UEFA'},
+  {icon:'🌍',name:"Women's World Cup 2027",country:'FIFA'},
+  {icon:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:"Women's Super League",country:'England'},
+  {icon:'🇩🇪',name:"Frauen-Bundesliga",country:'Germany'},
+  {icon:'🇪🇸',name:"Liga F",country:'Spain'},
+  {icon:'🇫🇷',name:"Division 1 Féminine",country:'France'},
+  {icon:'🇺🇸',name:"NWSL",country:'USA'},
+  {icon:'🇦🇺',name:"A-League Women",country:'Australia'},
+  {icon:'🇳🇬',name:"Nigeria Women Football League",country:'Nigeria'},
+];
+
+const players={
+  'Sam Kerr':{flag:'🇦🇺',team:'Chelsea',pos:'Forward',age:30,caps:132,intGoals:68,apps:18,goals:18,assists:4,rating:8.9,bio:"One of the most lethal strikers in women's football history. Known for her acrobatic finishes, aerial dominance, and relentless pressing. Has won multiple league titles across Australia, USA, and England.",career:[{year:'2013-15',club:'Western NY Flash',apps:52,goals:28},{year:'2015-17',club:'Sky Blue FC',apps:44,goals:24},{year:'2017-18',club:'Brisbane Roar',apps:12,goals:9},{year:'2018-',club:'Chelsea',apps:120,goals:95}]},
+  'Beth Mead':{flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',team:'Arsenal',pos:'Forward',age:29,caps:51,intGoals:31,apps:18,goals:15,assists:9,rating:8.5,bio:"Golden Boot and Player of the Tournament at Euro 2022. Electrifying pace and exceptional link-up play on the right wing. Returned from a serious ACL injury to reclaim her world-class form.",career:[{year:'2014-17',club:'Sunderland',apps:60,goals:35},{year:'2017-',club:'Arsenal',apps:180,goals:98}]},
+  'Lauren James':{flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',team:'Chelsea',pos:'Forward',age:23,caps:22,intGoals:14,apps:17,goals:14,assists:7,rating:8.7,bio:"One of the most exciting young talents in the world. Incredible dribbling ability, powerful shooting, and a natural football intelligence that belies her age. Sister of England international Reece James.",career:[{year:'2019-21',club:'Man Utd',apps:40,goals:14},{year:'2021-',club:'Chelsea',apps:85,goals:48}]},
+  'Chloe Kelly':{flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',team:'Man City',pos:'Forward',age:27,caps:36,intGoals:18,apps:16,goals:12,assists:5,rating:8.2,bio:"Hero of Euro 2022, scoring the winning penalty in the final. Fearless, direct winger with a big-game mentality and an exceptional work rate. Overcame a serious ACL injury in 2021.",career:[{year:'2016-19',club:'Everton',apps:55,goals:20},{year:'2019-21',club:'Birmingham',apps:35,goals:18},{year:'2021-',club:'Man City',apps:90,goals:42}]},
+  'Rachel Daly':{flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',team:'Aston Villa',pos:'Forward',age:33,caps:57,intGoals:33,apps:18,goals:11,assists:3,rating:8.1,bio:"Deadly penalty-box striker who reinvented herself from defender to one of the WSL's top scorers. Consistent performer at both club and international level with a proven big-game record.",career:[{year:'2012-16',club:'Leeds United',apps:60,goals:22},{year:'2016-22',club:'Houston Dash',apps:130,goals:53},{year:'2022-23',club:'Aston Villa',apps:35,goals:25},{year:'2023-',club:'Aston Villa',apps:38,goals:22}]},
+};
+
+const matches=[
+  {league:"Women's Champions League",flag:'🏆',country:'UEFA',games:[
+    {id:'ucl1',time:"45'",status:'live',home:'Lyon',homeC:'🇫🇷',away:'Arsenal',awayC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',homeScore:2,awayScore:1,winner:'home',venue:'Groupama Stadium',attendance:'32,000',
+     stats:{possession:[58,42],shots:[9,6],onTarget:[5,3],corners:[6,3],fouls:[8,11]},
+     timeline:[{min:"12'",type:'goal',desc:'Amandine Henry opens the scoring',team:'home',sub:'Assist: Selma Bacha'},{min:"29'",type:'goal',desc:'Beth Mead equalises!',team:'away',sub:'Assist: Lauren James'},{min:"38'",type:'yellow',desc:'Leah Williamson booked',team:'away',sub:'Foul on Diani'},{min:"44'",type:'goal',desc:'Ada Hegerberg header!',team:'home',sub:'Assist: Henry'}],
+     homeLineup:[{num:'1',name:'Endler',pos:'GK'},{num:'2',name:'Bacha',pos:'LB'},{num:'5',name:'Buchanan',pos:'CB'},{num:'4',name:'Renard',pos:'CB'},{num:'3',name:'Carpenter',pos:'RB'},{num:'8',name:'Henry',pos:'CM'},{num:'10',name:'Macario',pos:'CM'},{num:'7',name:'Diani',pos:'RW'},{num:'11',name:'Hegerberg',pos:'ST'},{num:'9',name:'Le Sommer',pos:'LW'},{num:'6',name:'Majri',pos:'AM'}],
+     awayLineup:[{num:'1',name:'Zinsberger',pos:'GK'},{num:'2',name:'Wubben-Moy',pos:'CB'},{num:'5',name:'Williamson',pos:'CB'},{num:'3',name:'McCabe',pos:'LB'},{num:'4',name:'Maanum',pos:'CM'},{num:'8',name:'Walti',pos:'CM'},{num:'6',name:'Miedema',pos:'AM'},{num:'7',name:'Mead',pos:'RW'},{num:'11',name:'James L.',pos:'LW'},{num:'9',name:'Blackstenius',pos:'ST'},{num:'10',name:'Foord',pos:'SS'}]},
+    {id:'ucl2',time:'20:00',status:'upcoming',home:'Barcelona',homeC:'🇪🇸',away:'Chelsea',awayC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',homeScore:null,awayScore:null,venue:'Spotify Camp Nou',attendance:'TBC',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:"Women's Super League",flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',country:'England',games:[
+    {id:'wsl1',time:'FT',status:'finished',home:'Man City',homeC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',away:'Liverpool',awayC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',homeScore:3,awayScore:1,winner:'home',venue:'Academy Stadium',attendance:'4,850',
+     stats:{possession:[62,38],shots:[14,5],onTarget:[7,2],corners:[8,2],fouls:[6,10]},
+     timeline:[{min:"8'",type:'goal',desc:'Chloe Kelly opens the scoring',team:'home',sub:''},{min:"35'",type:'goal',desc:'Kelly nets her brace',team:'home',sub:'Assist: Fowler'},{min:"51'",type:'goal',desc:'Liverpool pull one back',team:'away',sub:''},{min:"78'",type:'goal',desc:'Shaw seals the win',team:'home',sub:''}],
+     homeLineup:[{num:'1',name:'Roebuck',pos:'GK'},{num:'5',name:'Bronze',pos:'RB'},{num:'4',name:'Greenwood',pos:'CB'},{num:'6',name:'Stokes',pos:'CB'},{num:'3',name:'Castellanos',pos:'LB'},{num:'8',name:'Walsh',pos:'CM'},{num:'10',name:'Fowler',pos:'CM'},{num:'7',name:'Kelly',pos:'RW'},{num:'9',name:'Shaw',pos:'ST'},{num:'11',name:'Park',pos:'LW'},{num:'17',name:'Hemp',pos:'AM'}],
+     awayLineup:[{num:'1',name:'Hampton',pos:'GK'},{num:'2',name:'Robe',pos:'RB'},{num:'5',name:'Bonner',pos:'CB'},{num:'6',name:'Wardlaw',pos:'CB'},{num:'3',name:'Kempson',pos:'LB'},{num:'8',name:'Fahey',pos:'CM'},{num:'10',name:'Coombs',pos:'CM'},{num:'7',name:'Furness',pos:'RW'},{num:'9',name:'Ramirez',pos:'ST'},{num:'11',name:'Dowie',pos:'LW'},{num:'17',name:'Parry',pos:'AM'}]},
+    {id:'wsl2',time:'FT',status:'finished',home:'Aston Villa',homeC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',away:'Tottenham',awayC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',homeScore:0,awayScore:2,winner:'away',venue:'Villa Park',attendance:'6,200',stats:{possession:[45,55],shots:[4,11],onTarget:[1,6],corners:[3,7],fouls:[9,7]},timeline:[],homeLineup:[],awayLineup:[]},
+    {id:'wsl3',time:'18:30',status:'upcoming',home:'Brighton',homeC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',away:'Everton',awayC:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',homeScore:null,awayScore:null,venue:'Amex Stadium',attendance:'TBC',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:'Liga F',flag:'🇪🇸',country:'Spain',games:[
+    {id:'ligaf1',time:"78'",status:'live',home:'Real Madrid',homeC:'🇪🇸',away:'Atlético',awayC:'🇪🇸',homeScore:1,awayScore:1,winner:null,venue:'Alfredo Di Stéfano',attendance:'8,400',stats:{possession:[55,45],shots:[7,8],onTarget:[3,4],corners:[4,5],fouls:[10,8]},timeline:[{min:"22'",type:'goal',desc:'Athenea del Castillo',team:'home',sub:''},{min:"60'",type:'goal',desc:'Sosa equalises',team:'away',sub:''}],homeLineup:[],awayLineup:[]},
+    {id:'ligaf2',time:'FT',status:'finished',home:'Sevilla',homeC:'🇪🇸',away:'Valencia',awayC:'🇪🇸',homeScore:2,awayScore:0,winner:'home',venue:'Jesús Navas',attendance:'2,100',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:'Frauen-Bundesliga',flag:'🇩🇪',country:'Germany',games:[
+    {id:'bund1',time:'FT',status:'finished',home:'Bayern Munich',homeC:'🇩🇪',away:'Wolfsburg',awayC:'🇩🇪',homeScore:1,awayScore:2,winner:'away',venue:'FC Bayern Campus',attendance:'3,500',stats:{possession:[52,48],shots:[10,12],onTarget:[4,6],corners:[6,4],fouls:[7,9]},timeline:[{min:"15'",type:'goal',desc:'Bühl opens scoring',team:'home',sub:''},{min:"44'",type:'goal',desc:'Popp levels it',team:'away',sub:''},{min:"88'",type:'goal',desc:'Harder late winner!',team:'away',sub:''}],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:'Division 1 Féminine',flag:'🇫🇷',country:'France',games:[
+    {id:'d1f1',time:'FT',status:'finished',home:'PSG',homeC:'🇫🇷',away:'Montpellier',awayC:'🇫🇷',homeScore:4,awayScore:0,winner:'home',venue:'Stade Charlety',attendance:'4,100',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:'NWSL',flag:'🇺🇸',country:'USA',games:[
+    {id:'nwsl1',time:'02:00',status:'upcoming',home:'Portland Thorns',homeC:'🇺🇸',away:'NJ/NY Gotham',awayC:'🇺🇸',homeScore:null,awayScore:null,venue:'Providence Park',attendance:'TBC',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+  {league:'Nigeria WFL',flag:'🇳🇬',country:'Nigeria',games:[
+    {id:'nwfl1',time:'FT',status:'finished',home:'Rivers Angels',homeC:'🇳🇬',away:'Bayelsa Queens',awayC:'🇳🇬',homeScore:2,awayScore:1,winner:'home',venue:'Adokiye Amiesimaka',attendance:'3,200',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+    {id:'nwfl2',time:'FT',status:'finished',home:'Edo Queens',homeC:'🇳🇬',away:'Delta Queens',awayC:'🇳🇬',homeScore:0,awayScore:0,winner:null,venue:'Samuel Ogbemudia',attendance:'2,800',stats:null,timeline:[],homeLineup:[],awayLineup:[]},
+  ]},
+];
+
+const scorers=[
+  {rank:1,name:'Sam Kerr',team:'Chelsea',goals:18,flag:'🇦🇺'},
+  {rank:2,name:'Beth Mead',team:'Arsenal',goals:15,flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {rank:3,name:'Lauren James',team:'Chelsea',goals:14,flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {rank:4,name:'Chloe Kelly',team:'Man City',goals:12,flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {rank:5,name:'Rachel Daly',team:'Aston Villa',goals:11,flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+];
+
+const standings=[
+  {pos:1,team:'Chelsea',played:18,won:15,drawn:2,lost:1,pts:47},
+  {pos:2,team:'Arsenal',played:18,won:14,drawn:2,lost:2,pts:44},
+  {pos:3,team:'Man City',played:18,won:13,drawn:3,lost:2,pts:42},
+  {pos:4,team:'Liverpool',played:18,won:11,drawn:2,lost:5,pts:35},
+  {pos:5,team:'Aston Villa',played:18,won:9,drawn:3,lost:6,pts:30},
+  {pos:6,team:'Brighton',played:18,won:7,drawn:3,lost:8,pts:24},
+];
+
+let currentMatch=null, currentPlayer=null;
+
+// DATES
+function renderDates(){
+  const strip=document.getElementById('dateStrip');
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const today=new Date();
+  for(let i=-3;i<=4;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const pill=document.createElement('div'); pill.className='date-pill'+(i===0?' active':'');
+    pill.innerHTML=`<span class="day">${i===0?'Today':days[d.getDay()]}</span><span class="num">${d.getDate()}</span>`;
+    pill.onclick=()=>{document.querySelectorAll('.date-pill').forEach(p=>p.classList.remove('active'));pill.classList.add('active');};
+    strip.appendChild(pill);
+  }
+}
+
+// COMPETITIONS
+function renderCompetitions(){
+  const list=document.getElementById('compList');
+  competitions.forEach(c=>{
+    const item=document.createElement('div'); item.className='comp-item';
+    item.innerHTML=`<span class="comp-icon">${c.icon}</span><div class="comp-info"><div class="comp-name">${c.name}</div><div class="comp-country">${c.country}</div></div><span style="color:var(--text-muted);font-size:12px">›</span>`;
+    list.appendChild(item);
+  });
+}
+
+// MATCHES
+function renderMatches(filter='all'){
+  const feed=document.getElementById('matchesFeed'); feed.innerHTML='';
+  matches.forEach(league=>{
+    const filtered=league.games.filter(g=>filter==='all'||g.status===filter);
+    if(!filtered.length) return;
+    const group=document.createElement('div'); group.className='league-group';
+    const liveCount=filtered.filter(g=>g.status==='live').length;
+    group.innerHTML=`<div class="league-header"><span class="league-flag">${league.flag}</span><span class="league-name">${league.league}</span>${liveCount?`<span class="live-badge"><span class="live-dot"></span>LIVE</span>`:''}<span class="league-count">${filtered.length}</span></div>`;
+    filtered.forEach(game=>{
+      const row=document.createElement('div'); row.className='match-row';
+      const isLive=game.status==='live';
+      const homeWin=game.winner==='home', awayWin=game.winner==='away';
+      row.innerHTML=`
+        <div class="match-time${isLive?' live':''}">${game.time}</div>
+        <div class="team-home"><span class="team-name">${game.home}</span><div class="team-crest">${game.homeC}</div></div>
+        <div class="score-box">${game.homeScore!==null?`<span class="score ${homeWin?'winner':''}">${game.homeScore}</span><span class="score-sep">:</span><span class="score ${awayWin?'winner':''}">${game.awayScore}</span>`:`<span class="match-status-vs">vs</span>`}</div>
+        <div class="team-away"><div class="team-crest">${game.awayC}</div><span class="team-name">${game.away}</span></div>
+        <div style="width:52px"></div>`;
+      row.onclick=()=>openMatchModal(game,league);
+      group.appendChild(row);
+    });
+    feed.appendChild(group);
+  });
+  if(!feed.children.length) feed.innerHTML=`<div style="text-align:center;padding:48px 20px;color:var(--text-muted);font-size:14px">No matches found</div>`;
+}
+
+// SCORERS
+function renderScorers(){
+  const list=document.getElementById('scorersList');
+  scorers.forEach(s=>{
+    const row=document.createElement('div'); row.className='scorer-row';
+    row.innerHTML=`<span class="scorer-rank">${s.rank}</span><div style="font-size:20px">${s.flag}</div><div class="scorer-info"><div class="scorer-name">${s.name}</div><div class="scorer-team">${s.team}</div></div><div class="scorer-goals">${s.goals}<span>G</span></div>`;
+    row.onclick=()=>openPlayerModal(s.name);
+    list.appendChild(row);
+  });
+}
+
+// STANDINGS
+function renderStandings(){
+  const table=document.getElementById('standingsTable');
+  const header=document.createElement('div'); header.className='standings-row header';
+  header.innerHTML=`<div></div><div>Club</div><div style="text-align:center">P</div><div style="text-align:center">W</div><div style="text-align:center">L</div><div style="text-align:center">Pts</div>`;
+  table.appendChild(header);
+  standings.forEach((s,i)=>{
+    const row=document.createElement('div'); row.className='standings-row';
+    const color=i<2?'#c1ff4f':i===2?'#3b82f6':'transparent';
+    row.innerHTML=`<div class="standings-pos">${s.pos}</div><div class="standings-team"><div class="pos-indicator" style="background:${color};opacity:0.7"></div><span>${s.team}</span></div><div class="standings-num">${s.played}</div><div class="standings-num">${s.won}</div><div class="standings-num">${s.lost}</div><div class="standings-pts">${s.pts}</div>`;
+    table.appendChild(row);
+  });
+}
+
+// MATCH MODAL
+function openMatchModal(game, league){
+  currentMatch={game,league};
+  document.getElementById('matchModalTitle').textContent=`${game.home} vs ${game.away}`;
+  const homeWin=game.winner==='home', awayWin=game.winner==='away';
+
+  document.getElementById('matchHero').innerHTML=`
+    <div class="match-hero">
+      <div class="match-hero-league">${league.flag} ${league.league}</div>
+      <div class="match-hero-teams">
+        <div class="match-hero-team">
+          <div class="match-hero-crest">${game.homeC}</div>
+          <div class="match-hero-name" style="color:${homeWin?'var(--lime)':'var(--text)'}">${game.home}</div>
+        </div>
+        <div style="text-align:center">
+          ${game.homeScore!==null?`<div class="match-hero-score">${game.homeScore}<span style="font-size:32px;color:var(--text-muted);padding:0 6px">:</span>${game.awayScore}</div>`:`<div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--text-muted)">VS</div>`}
+          <div class="match-hero-meta">${game.time} · ${game.venue||'TBC'}</div>
+          ${game.attendance&&game.attendance!=='TBC'?`<div style="font-size:11px;color:var(--text-muted);margin-top:3px">👥 ${game.attendance}</div>`:''}
+        </div>
+        <div class="match-hero-team">
+          <div class="match-hero-crest">${game.awayC}</div>
+          <div class="match-hero-name" style="color:${awayWin?'var(--lime)':'var(--text)'}">${game.away}</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('matchOverview').innerHTML=`
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.8">
+      ${game.status==='live'?`<span style="color:var(--live);font-weight:700">⚡ LIVE — ${game.time}</span><br>`:''}
+      ${game.status==='finished'?`<span style="color:var(--lime);font-weight:600">Full Time</span> · `:''}
+      ${league.league} · Venue: <strong style="color:var(--text)">${game.venue||'TBC'}</strong> · Attendance: <strong style="color:var(--text)">${game.attendance||'TBC'}</strong>
+    </p>
+    <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Head to Head (Last 5)</div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface3);border-radius:6px"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--lime)">3</div><div style="font-size:10px;color:var(--text-muted)">${game.home} Wins</div></div>
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface3);border-radius:6px"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text-dim)">1</div><div style="font-size:10px;color:var(--text-muted)">Draws</div></div>
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface3);border-radius:6px"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text-dim)">1</div><div style="font-size:10px;color:var(--text-muted)">${game.away} Wins</div></div>
+      </div>
+    </div>`;
+
+  if(game.stats){
+    const s=game.stats;
+    const rows=[['Possession',s.possession[0]+'%',s.possession[1]+'%',s.possession[0],s.possession[1]],['Shots',s.shots[0],s.shots[1],s.shots[0],s.shots[1]],['On Target',s.onTarget[0],s.onTarget[1],s.onTarget[0],s.onTarget[1]],['Corners',s.corners[0],s.corners[1],s.corners[0],s.corners[1]],['Fouls',s.fouls[0],s.fouls[1],s.fouls[0],s.fouls[1]]];
+    document.getElementById('matchStats').innerHTML=`<div>${rows.map(([label,hv,av,h,a])=>{
+      const t=h+a||1;
+      return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--lime)">${hv}</span><span style="font-size:11px;color:var(--text-muted)">${label}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text-dim)">${av}</span></div><div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;display:flex"><div style="height:100%;background:var(--lime);border-radius:3px;width:${Math.round(h/t*100)}%"></div></div></div>`;
+    }).join('')}</div>`;
+  } else {
+    document.getElementById('matchStats').innerHTML=`<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Stats not available</div>`;
+  }
+
+  if(game.homeLineup.length){
+    document.getElementById('matchLineup').innerHTML=`<div class="lineup-grid"><div><div class="lineup-team-title">${game.home}</div>${game.homeLineup.map(p=>`<div class="lineup-player" onclick="openPlayerModal('${p.name}')"><span class="lineup-num">${p.num}</span><span class="lineup-pos">${p.pos}</span><span style="font-size:13px;font-weight:500">${p.name}</span></div>`).join('')}</div><div><div class="lineup-team-title">${game.away}</div>${game.awayLineup.map(p=>`<div class="lineup-player" onclick="openPlayerModal('${p.name}')"><span class="lineup-num">${p.num}</span><span class="lineup-pos">${p.pos}</span><span style="font-size:13px;font-weight:500">${p.name}</span></div>`).join('')}</div></div>`;
+  } else {
+    document.getElementById('matchLineup').innerHTML=`<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lineup not announced</div>`;
+  }
+
+  const icons={goal:'⚽',yellow:'🟨','red-card':'🟥',sub:'🔄'};
+  document.getElementById('matchTimeline').innerHTML=game.timeline.length
+    ?`<div class="timeline">${game.timeline.map(e=>`<div class="timeline-event ${e.type}"><div class="timeline-minute">${e.min} · ${icons[e.type]||'•'} ${e.team==='home'?game.home:game.away}</div><div class="timeline-desc">${e.desc}</div>${e.sub?`<div class="timeline-sub-info">${e.sub}</div>`:''}</div>`).join('')}</div>`
+    :`<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">No events yet</div>`;
+
+  // AI chips
+  const matchChipTexts=[`Tactics: ${game.home} vs ${game.away}`,`Key players to watch`,`Historical record between these clubs`,`Who's winning the tie overall?`];
+  const matchChipsEl=document.getElementById('matchChips'); matchChipsEl.innerHTML='';
+  matchChipTexts.forEach(t=>{const c=document.createElement('div');c.className='ai-chip';c.textContent=t;c.onclick=()=>{document.getElementById('matchAIInput').value=t;askMatchAI();};matchChipsEl.appendChild(c);});
+
+  document.getElementById('matchAIResponse').textContent='Ask me about tactics, player performances, historical context, or anything about this match.';
+  document.getElementById('matchAIInput').value='';
+
+  document.querySelectorAll('#matchModal .modal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('#matchModal .modal-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+  openModal('matchModal');
+}
+
+// PLAYER MODAL
+function openPlayerModal(name){
+  const p=players[name]||{flag:'⚽',team:'—',pos:'Player',age:'—',caps:'—',intGoals:'—',apps:'—',goals:'—',assists:'—',rating:'—',bio:'Player profile coming soon.',career:[]};
+  currentPlayer={name,...p};
+  document.getElementById('playerModalTitle').textContent=name;
+
+  document.getElementById('playerHero').innerHTML=`
+    <div class="player-hero">
+      <div class="player-avatar">${p.flag}</div>
+      <div class="player-info">
+        <div class="player-name-big">${name}</div>
+        <div class="player-meta">${p.pos} · ${p.team}${p.age&&p.age!=='—'?' · Age '+p.age:''}</div>
+        ${p.caps&&p.caps!=='—'?`<div style="margin-top:6px;font-size:11px;color:var(--text-muted)">${p.caps} International Caps · ${p.intGoals} International Goals</div>`:''}
+      </div>
+      <div style="font-size:36px">${p.flag}</div>
+    </div>
+    <div class="player-stats-grid">
+      <div class="player-stat-box"><div class="player-stat-val">${p.goals||0}</div><div class="player-stat-label">Season Goals</div></div>
+      <div class="player-stat-box"><div class="player-stat-val">${p.assists||0}</div><div class="player-stat-label">Assists</div></div>
+      <div class="player-stat-box"><div class="player-stat-val">${p.apps||0}</div><div class="player-stat-label">Appearances</div></div>
+      <div class="player-stat-box"><div class="player-stat-val" style="font-size:22px">${p.rating||'—'}</div><div class="player-stat-label">Avg Rating</div></div>
+    </div>`;
+
+  document.getElementById('playerOverview').innerHTML=`
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.8;margin-bottom:16px">${p.bio}</p>
+    <div style="padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Recent Form</div>
+      <div style="display:flex;gap:6px">
+        ${['W','W','D','W','L','W','W'].map(r=>`<div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${r==='W'?'var(--lime-muted)':r==='D'?'var(--surface3)':'rgba(255,82,82,0.15)'};color:${r==='W'?'var(--lime)':r==='D'?'var(--text-dim)':'var(--red)'}">${r}</div>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('playerCareer').innerHTML=p.career&&p.career.length
+    ?`<div style="margin-bottom:8px;font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase">Club Career</div>
+      ${p.career.map(c=>`<div style="display:grid;grid-template-columns:80px 1fr 40px 40px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted)">${c.year}</span>
+        <span style="font-size:13px;font-weight:500">${c.club}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);text-align:center">${c.apps}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);text-align:center">${c.goals}</span>
+      </div>`).join('')}
+      <div style="display:grid;grid-template-columns:80px 1fr 40px 40px;gap:8px;padding:6px 0;margin-top:4px">
+        <span></span><span></span>
+        <div style="text-align:center;font-size:9px;color:var(--text-muted);letter-spacing:1px">APPS</div>
+        <div style="text-align:center;font-size:9px;color:var(--text-muted);letter-spacing:1px">GOALS</div>
+      </div>`
+    :`<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Career data coming soon</div>`;
+
+  // AI chips for player
+  const playerChipTexts=[`What makes ${name} world-class?`,`${name}'s playing style`,`Career highlights and trophies`,`How does ${name} compare to the best?`];
+  const playerChipsEl=document.getElementById('playerChips'); playerChipsEl.innerHTML='';
+  playerChipTexts.forEach(t=>{const c=document.createElement('div');c.className='ai-chip';c.textContent=t;c.onclick=()=>{document.getElementById('playerAIInput').value=t;askPlayerAI();};playerChipsEl.appendChild(c);});
+
+  document.getElementById('playerAIResponse').textContent=`Ask me about ${name}'s strengths, career highlights, playing style, or legacy in women's football.`;
+  document.getElementById('playerAIInput').value='';
+
+  document.querySelectorAll('#playerModal .modal-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('#playerModal .modal-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+  openModal('playerModal');
+}
+
+// AI
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:"You are HerGame AI, an expert analyst specialising in women's football worldwide. You have deep knowledge of players, teams, tactics, leagues, and the history of the women's game globally — including leagues in Africa, Asia, North and South America, Europe, and Australia. Give insightful, enthusiastic, and accurate answers. Keep responses under 220 words. Use clear formatting with short paragraphs.",
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  const data=await res.json();
+  return data.content?.find(b=>b.type==='text')?.text||'Sorry, I could not get a response.';
+}
+
+async function askMatchAI(){
+  const input=document.getElementById('matchAIInput');
+  const btn=document.getElementById('matchAIBtn');
+  const spinner=document.getElementById('matchSpinner');
+  const response=document.getElementById('matchAIResponse');
+  const q=input.value.trim(); if(!q||!currentMatch) return;
+  const {game,league}=currentMatch;
+  btn.disabled=true; spinner.classList.add('active'); response.textContent='Analysing…';
+  const ctx=`Match: ${game.home} ${game.homeScore!==null?game.homeScore+' - '+game.awayScore:''} ${game.away} (${game.time}, status: ${game.status}). Competition: ${league.league}. Venue: ${game.venue}. Attendance: ${game.attendance}. Key events: ${game.timeline.map(e=>e.desc).join('; ')||'none yet'}.`;
+  try { response.textContent=await callClaude(`${ctx}\n\nUser question: ${q}`); }
+  catch(e){ response.textContent='Could not connect. Please check your connection.'; }
+  btn.disabled=false; spinner.classList.remove('active'); input.value='';
+}
+
+async function askPlayerAI(){
+  const input=document.getElementById('playerAIInput');
+  const btn=document.getElementById('playerAIBtn');
+  const spinner=document.getElementById('playerSpinner');
+  const response=document.getElementById('playerAIResponse');
+  const q=input.value.trim(); if(!q||!currentPlayer) return;
+  const pl=currentPlayer;
+  btn.disabled=true; spinner.classList.add('active'); response.textContent='Researching…';
+  const ctx=`Player: ${pl.name}, ${pl.pos} for ${pl.team}. ${pl.caps||0} international caps, ${pl.intGoals||0} international goals. This season: ${pl.apps||0} appearances, ${pl.goals||0} goals, ${pl.assists||0} assists. Rating: ${pl.rating}. Bio: ${pl.bio}`;
+  try { response.textContent=await callClaude(`${ctx}\n\nUser question: ${q}`); }
+  catch(e){ response.textContent='Could not connect. Please check your connection.'; }
+  btn.disabled=false; spinner.classList.remove('active'); input.value='';
+}
+
+// HELPERS
+function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function closeAllModals(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open')); document.body.style.overflow=''; }
+function handleOverlayClick(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+function switchModalTab(btn,panelId){
+  const modal=btn.closest('.modal');
+  modal.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  modal.querySelectorAll('.modal-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+function switchTab(btn,filter){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active'); renderMatches(filter);
+}
+
+// FEATURED BANNER click
+document.getElementById('featuredBanner').onclick=()=>{
+  const ucl=matches[0]; openMatchModal(ucl.games[0],ucl);
+};
+
+// INIT
+renderDates(); renderCompetitions(); renderMatches(); renderScorers(); renderStandings();
+</script>
 </body>
 </html>
